@@ -10,6 +10,7 @@ namespace expanse
 {
 	template<class TChar, TextEncoding TEncoding> struct StringView;
 	template<class T> struct ResultRV;
+	struct IAllocator;
 
 	template<class TChar, TextEncoding TEncoding>
 	struct String final
@@ -32,8 +33,8 @@ namespace expanse
 
 		String<TChar, TEncoding> &operator=(String<TChar, TEncoding> &&other);
 
-		ResultRV<String<TChar, TEncoding>> Clone() const;
-		static ResultRV<String<TChar, TEncoding>> CreateFromBytes(ArrayView<const TChar> bytes);
+		ResultRV<String<TChar, TEncoding>> Clone(IAllocator *alloc) const;
+		static ResultRV<String<TChar, TEncoding>> CreateFromBytes(IAllocator *alloc, ArrayView<const TChar> bytes);
 		static ResultRV<String<TChar, TEncoding>> CreateFromZeroTerminatedArray(ArrayPtr<TChar> &&bytes);
 
 	private:
@@ -135,17 +136,17 @@ namespace expanse
 
 
 	template<class TChar, TextEncoding TEncoding>
-	ResultRV<String<TChar, TEncoding>> String<TChar, TEncoding>::Clone() const
+	ResultRV<String<TChar, TEncoding>> String<TChar, TEncoding>::Clone(IAllocator *alloc) const
 	{
-		return static_cast<UTF8StringView_t>(*this).CloneToString();
+		return static_cast<UTF8StringView_t>(*this).CloneToString(alloc);
 	}
 
 	template<class TChar, TextEncoding TEncoding>
-	ResultRV<String<TChar, TEncoding>> String<TChar, TEncoding>::CreateFromBytes(ArrayView<const TChar> bytes)
+	ResultRV<String<TChar, TEncoding>> String<TChar, TEncoding>::CreateFromBytes(IAllocator *alloc, ArrayView<const TChar> bytes)
 	{
 		const size_t numBytes = bytes.Size();
 
-		CHECK_RV(ArrayPtr<uint8_t>, bytesCopy, NewArray<uint8_t>(numBytes + 1));
+		CHECK_RV(ArrayPtr<uint8_t>, bytesCopy, NewArray<uint8_t>(alloc, numBytes + 1));
 		bytesCopy[numBytes] = 0;
 
 		if (numBytes > 0)

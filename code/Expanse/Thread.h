@@ -7,6 +7,7 @@ namespace expanse
 {
 	typedef int(*ThreadFunc_t)(void *userdata);
 	typedef int ThreadID_t;
+	struct IAllocator;
 
 	template<class T> struct CorePtr;
 	template<class T> struct ResultRV;
@@ -19,7 +20,7 @@ namespace expanse
 		virtual int GetExitCode() const = 0;
 		virtual ThreadID_t GetID() const = 0;
 
-		static ResultRV<CorePtr<Thread>> CreateThread(ThreadFunc_t threadFunc, void *userData, const UTF8StringView_t &name);
+		static ResultRV<CorePtr<Thread>> CreateThread(IAllocator *alloc, ThreadFunc_t threadFunc, void *userData, const UTF8StringView_t &name);
 
 	protected:
 		Thread();

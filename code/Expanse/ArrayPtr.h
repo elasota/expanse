@@ -6,6 +6,7 @@ namespace expanse
 {
 	class CoreObject;
 	class ObjectAllocator;
+	struct IAllocator;
 	template<class T> struct ArrayView;
 
 	template<class T>
@@ -35,11 +36,13 @@ namespace expanse
 	private:
 		friend class ObjectAllocator;
 
-		explicit ArrayPtr(T *elements, size_t size);
+		explicit ArrayPtr(IAllocator *alloc, T *elements, size_t size);
 		ArrayPtr(const ArrayPtr<T> &other) = delete;
 
 		T *m_elements;
 		size_t m_size;
+
+		IAllocator *m_alloc;
 	};
 }
 
@@ -53,6 +56,7 @@ namespace expanse
 	inline ArrayPtr<T>::ArrayPtr()
 		: m_elements(nullptr)
 		, m_size(0)
+		, m_alloc(nullptr)
 	{
 	}
 
@@ -60,6 +64,7 @@ namespace expanse
 	inline ArrayPtr<T>::ArrayPtr(std::nullptr_t)
 		: m_elements(nullptr)
 		, m_size(0)
+		, m_alloc(nullptr)
 	{
 	}
 
@@ -67,9 +72,11 @@ namespace expanse
 	inline ArrayPtr<T>::ArrayPtr(ArrayPtr<T> &&other)
 		: m_elements(other.m_elements)
 		, m_size(other.m_size)
+		, m_alloc(other.m_alloc)
 	{
 		other.m_elements = nullptr;
 		other.m_size = 0;
+		other.m_alloc = nullptr;
 	}
 
 	template<class T>
@@ -145,9 +152,10 @@ namespace expanse
 	}
 
 	template<class T>
-	ArrayPtr<T>::ArrayPtr(T *elements, size_t size)
+	ArrayPtr<T>::ArrayPtr(IAllocator *alloc, T *elements, size_t size)
 		: m_elements(elements)
 		, m_size(size)
+		, m_alloc(alloc)
 	{
 	}
 }

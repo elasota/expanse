@@ -10,7 +10,7 @@
 
 namespace expanse
 {
-	ResultRV<ArrayPtr<wchar_t>> WindowsUtils::ConvertToWideChar(const UTF8StringView_t &utf8String)
+	ResultRV<ArrayPtr<wchar_t>> WindowsUtils::ConvertToWideChar(IAllocator *alloc, const UTF8StringView_t &utf8String)
 	{
 		StaticArray<uint16_t, UTF16::kMaxEncodedCharacters> utf16Encoded;
 
@@ -38,7 +38,7 @@ namespace expanse
 			}
 		}
 
-		CHECK_RV(ArrayPtr<wchar_t>, wcharChars, NewArray<wchar_t>(numUTF16Characters + 1));
+		CHECK_RV(ArrayPtr<wchar_t>, wcharChars, NewArray<wchar_t>(alloc, numUTF16Characters + 1));
 
 		wcharChars[numUTF16Characters] = static_cast<wchar_t>(0);
 

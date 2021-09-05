@@ -9,6 +9,7 @@ namespace expanse
 {
 	class AsyncFileSystem_Win32;
 	class AsyncFileSystem_Win32_WorkItem;
+	struct IAllocator;
 
 	class AsyncFileRequest_Win32 final : public AsyncFileRequest
 	{

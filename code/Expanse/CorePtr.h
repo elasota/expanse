@@ -6,6 +6,7 @@ namespace expanse
 {
 	class CoreObject;
 	class ObjectAllocator;
+	struct IAllocator;
 
 	struct CorePtrBase
 	{
@@ -18,8 +19,6 @@ namespace expanse
 		~CorePtrBase();
 
 		void TakeOwnershipFrom(CorePtrBase &other);
-
-		static void ReleaseObject(CoreObject *object);
 
 	private:
 		CorePtrBase(const CorePtrBase &other) = delete;
@@ -62,6 +61,7 @@ namespace expanse
 }
 
 #include "ExpAssert.h"
+#include "Mem.h"
 
 namespace expanse
 {
@@ -86,7 +86,7 @@ namespace expanse
 		if (m_object != nullptr)
 		{
 			EXP_ASSERT(m_object != other.m_object);
-			ReleaseObject(m_object);
+			ObjectAllocator::DeleteObject(m_object);
 		}
 
 		m_object = other.m_object;
@@ -96,7 +96,7 @@ namespace expanse
 	inline CorePtrBase::~CorePtrBase()
 	{
 		if (m_object)
-			ReleaseObject(m_object);
+			ObjectAllocator::DeleteObject(m_object);
 	}
 
 	template<class T>
@@ -151,7 +151,7 @@ namespace expanse
 	{
 		if (m_object)
 		{
-			ReleaseObject(m_object);
+			ObjectAllocator::DeleteObject(m_object);
 			m_object = nullptr;
 		}
 		return *this;

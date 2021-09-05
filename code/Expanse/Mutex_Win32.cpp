@@ -29,9 +29,9 @@ namespace expanse
 		LeaveCriticalSection(&m_criticalSection);
 	}
 
-	ResultRV<CorePtr<Mutex>> Mutex::Create()
+	ResultRV<CorePtr<Mutex>> Mutex::Create(IAllocator *alloc)
 	{
-		CHECK_RV(CorePtr<Mutex_Win32>, mutex, New<Mutex_Win32>());
+		CHECK_RV(CorePtr<Mutex_Win32>, mutex, New<Mutex_Win32>(alloc));
 		return CorePtr<Mutex>(std::move(mutex));
 	}
 }

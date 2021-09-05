@@ -44,10 +44,10 @@ namespace expanse
 		m_handle = handle;
 	}
 
-	ResultRV<CorePtr<ThreadEvent>> ThreadEvent::Create(const UTF8StringView_t &name, bool autoReset, bool startSignaled)
+	ResultRV<CorePtr<ThreadEvent>> ThreadEvent::Create(IAllocator *alloc, const UTF8StringView_t &name, bool autoReset, bool startSignaled)
 	{
-		CHECK_RV(ArrayPtr<wchar_t>, nameWStr, WindowsUtils::ConvertToWideChar(name));
-		CHECK_RV(CorePtr<ThreadEvent_Win32>, threadEvent, New<ThreadEvent_Win32>());
+		CHECK_RV(ArrayPtr<wchar_t>, nameWStr, WindowsUtils::ConvertToWideChar(alloc, name));
+		CHECK_RV(CorePtr<ThreadEvent_Win32>, threadEvent, New<ThreadEvent_Win32>(alloc));
 
 		HANDLE eventHdl = CreateEventW(nullptr, ((autoReset) ? FALSE : TRUE), ((startSignaled) ? TRUE : FALSE), nameWStr.GetBuffer());
 		if (eventHdl == nullptr)

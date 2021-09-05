@@ -13,6 +13,7 @@ namespace expanse
 	class Mutex;
 	class Thread;
 	class ThreadEvent;
+	struct IAllocator;
 
 	class AsyncFileSystem_Win32 final : public AsyncFileSystem
 	{

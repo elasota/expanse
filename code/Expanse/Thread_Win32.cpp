@@ -71,11 +71,11 @@ namespace expanse
 		return static_cast<DWORD>(threadFunc(userData));
 	}
 
-	ResultRV<CorePtr<Thread>> Thread::CreateThread(ThreadFunc_t threadFunc, void *userData, const UTF8StringView_t &name)
+	ResultRV<CorePtr<Thread>> Thread::CreateThread(IAllocator *alloc, ThreadFunc_t threadFunc, void *userData, const UTF8StringView_t &name)
 	{
-		CHECK_RV(ArrayPtr<wchar_t>, threadName, WindowsUtils::ConvertToWideChar(name));
-		CHECK_RV(CorePtr<ThreadEvent>, startupEvent, ThreadEvent::Create(UTF8StringView_t("Thread Startup Event"), true, false));
-		CHECK_RV(CorePtr<Thread_Win32>, thread, New<Thread_Win32>());
+		CHECK_RV(ArrayPtr<wchar_t>, threadName, WindowsUtils::ConvertToWideChar(alloc, name));
+		CHECK_RV(CorePtr<ThreadEvent>, startupEvent, ThreadEvent::Create(alloc, UTF8StringView_t("Thread Startup Event"), true, false));
+		CHECK_RV(CorePtr<Thread_Win32>, thread, New<Thread_Win32>(alloc));
 
 		Thread_Win32::ThreadStartData startData;
 		startData.m_name = threadName.GetBuffer();

@@ -14,9 +14,15 @@
 
 namespace expanse
 {
+	SynchronousFileSystem_Win32::SynchronousFileSystem_Win32()
+	{
+	}
+
 	ResultRV<CorePtr<FileStream>> SynchronousFileSystem_Win32::Open(const UTF8StringView_t &device, const UTF8StringView_t &path, Permission permission, CreationDisposition creationDisposition)
 	{
-		CHECK_RV(CorePtr<FileStream_Win32>, fileStream, New<FileStream_Win32>());
+		IAllocator *alloc = GetCoreObjectAllocator();
+
+		CHECK_RV(CorePtr<FileStream_Win32>, fileStream, New<FileStream_Win32>(alloc));
 		CHECK_RV(ArrayPtr<wchar_t>, canonicalPath, CanonicalizePath(device, path));
 
 		bool readable = false;
@@ -76,7 +82,9 @@ namespace expanse
 
 	Result SynchronousFileSystem_Win32::SetGamePath(const UTF8StringView_t &gamePath)
 	{
-		CHECK_RV(UTF8String_t, pathCopy, gamePath.CloneToString());
+		IAllocator *alloc = GetCoreObjectAllocator();
+
+		CHECK_RV(UTF8String_t, pathCopy, gamePath.CloneToString(alloc));
 		m_gamePath = std::move(pathCopy);
 
 		return ErrorCode::kOK;
@@ -91,11 +99,13 @@ namespace expanse
 		if (!basePath)
 			return ArrayPtr<wchar_t>(nullptr);
 
-		CHECK_RV(UTF8String_t, pathUTF8, basePath->Clone());
-		CHECK(StrUtils::Append(pathUTF8, UTF8StringView_t("\\")));
-		CHECK(StrUtils::Append(pathUTF8, path));
+		IAllocator *alloc = GetCoreObjectAllocator();
 
-		CHECK_RV(ArrayPtr<wchar_t>, converted, WindowsUtils::ConvertToWideChar(pathUTF8));
+		CHECK_RV(UTF8String_t, pathUTF8, basePath->Clone(alloc));
+		CHECK(StrUtils::Append(alloc, pathUTF8, UTF8StringView_t("\\")));
+		CHECK(StrUtils::Append(alloc, pathUTF8, path));
+
+		CHECK_RV(ArrayPtr<wchar_t>, converted, WindowsUtils::ConvertToWideChar(alloc, pathUTF8));
 
 		if (converted.Count() > 32767)
 			return ErrorCode::kInvalidPath;

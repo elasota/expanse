@@ -21,5 +21,13 @@
     <ClInclude Include="PreprocessorGrammar.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="CPreprocessor.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="TestCC.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

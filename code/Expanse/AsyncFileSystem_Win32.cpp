@@ -53,14 +53,15 @@ namespace expanse
 
 	Result AsyncFileSystem_Win32::Initialize()
 	{
-		//CHECK_RV(CorePtr<Thread>, ioThread, Thread::Cre
-		CHECK_RV(CorePtr<ThreadEvent>, ioWakeEvent, ThreadEvent::Create(UTF8StringView_t(""), true, false));
-		CHECK_RV(CorePtr<Mutex>, queueMutex, Mutex::Create());
+		IAllocator *alloc = GetCoreObjectAllocator();
+
+		CHECK_RV(CorePtr<ThreadEvent>, ioWakeEvent, ThreadEvent::Create(alloc, UTF8StringView_t(""), true, false));
+		CHECK_RV(CorePtr<Mutex>, queueMutex, Mutex::Create(alloc));
 
 		m_queueMutex = std::move(queueMutex);
 		m_ioWakeEvent = std::move(ioWakeEvent);
 		
-		CHECK_RV(CorePtr<Thread>, ioThread, Thread::CreateThread(StaticThreadFunc, this, UTF8StringView_t("AsyncFileSystem")));
+		CHECK_RV(CorePtr<Thread>, ioThread, Thread::CreateThread(alloc, StaticThreadFunc, this, UTF8StringView_t("AsyncFileSystem")));
 
 		m_initialized = true;
 		return ErrorCode::kOK;
@@ -70,16 +71,18 @@ namespace expanse
 	{
 		EXP_ASSERT(m_initialized);
 
-		CHECK_RV(UTF8String_t, deviceCopy, device.CloneToString());
-		CHECK_RV(UTF8String_t, pathCopy, path.CloneToString());
-		CHECK_RV(CorePtr<WorkItem>, workItem, New<WorkItem>());
-		CHECK_RV(CorePtr<AsyncFileRequest_Win32>, asyncRequest, New<AsyncFileRequest_Win32>(this));
+		IAllocator *alloc = GetCoreObjectAllocator();
+
+		CHECK_RV(UTF8String_t, deviceCopy, device.CloneToString(alloc));
+		CHECK_RV(UTF8String_t, pathCopy, path.CloneToString(alloc));
+		CHECK_RV(CorePtr<WorkItem>, workItem, New<WorkItem>(alloc));
+		CHECK_RV(CorePtr<AsyncFileRequest_Win32>, asyncRequest, New<AsyncFileRequest_Win32>(alloc, this));
 
 		WorkItem *workItemRef = workItem;
 
 		WorkItemIdentifier id;
-		workItemRef->m_id.m_device = std::move(deviceCopy);
-		workItemRef->m_id.m_path = std::move(pathCopy);
+		id.m_device = std::move(deviceCopy);
+		id.m_path = std::move(pathCopy);
 
 		{
 			MutexLock lock(m_queueMutex);
@@ -209,7 +212,9 @@ namespace expanse
 		if (fileSize > std::numeric_limits<size_t>::max())
 			return ErrorCode::kOutOfMemory;
 
-		CHECK_RV(ArrayPtr<uint8_t>, contents, NewArray<uint8_t>(static_cast<size_t>(fileSize)));
+		IAllocator *alloc = GetCoreObjectAllocator();
+
+		CHECK_RV(ArrayPtr<uint8_t>, contents, NewArray<uint8_t>(alloc, static_cast<size_t>(fileSize)));
 		CHECK_RV(size_t, amountRead, stream->ReadPartial(ArrayView<uint8_t>(contents)));
 
 		outContents = std::move(contents);

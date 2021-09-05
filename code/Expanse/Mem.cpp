@@ -1,15 +1,16 @@
 #include "Mem.h"
 
+#include "CoreObject.h"
+
 namespace expanse
 {
-	void ObjectAllocator::Delete(CorePtrBase &corePtr)
+	void ObjectAllocator::DeleteObject(CoreObject *obj)
 	{
-		CoreObject *obj = corePtr.m_object;
-		if (obj)
-		{
-			corePtr.m_object = nullptr;
-			obj->~CoreObject();
-			Mem::Release(obj);
-		}
+		if (!obj)
+			return;
+
+		IAllocator *alloc = obj->GetCoreObjectAllocator();
+		obj->~CoreObject();
+		alloc->Release(obj);
 	}
 }

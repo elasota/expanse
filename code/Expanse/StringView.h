@@ -8,6 +8,7 @@ namespace expanse
 {
 	template<class T> struct ArrayView;
 	template<class T> struct ResultRV;
+	struct IAllocator;
 
 	template<class TChar, TextEncoding TEncoding>
 	struct StringView
@@ -23,7 +24,7 @@ namespace expanse
 		bool operator==(const StringView<TChar, TEncoding> &other) const;
 		bool operator!=(const StringView<TChar, TEncoding> &other) const;
 
-		ResultRV<String<TChar, TEncoding>> CloneToString() const;
+		ResultRV<String<TChar, TEncoding>> CloneToString(IAllocator *alloc) const;
 
 	private:
 		const uint8_t *m_chars;
@@ -90,8 +91,8 @@ namespace expanse
 	}
 
 	template<class TChar, TextEncoding TEncoding>
-	ResultRV<String<TChar, TEncoding>> StringView<TChar, TEncoding>::CloneToString() const
+	ResultRV<String<TChar, TEncoding>> StringView<TChar, TEncoding>::CloneToString(IAllocator *alloc) const
 	{
-		return String<TChar, TEncoding>::CreateFromBytes(ArrayView<const TChar>(m_chars, m_length));
+		return String<TChar, TEncoding>::CreateFromBytes(alloc, ArrayView<const TChar>(m_chars, m_length));
 	}
 }

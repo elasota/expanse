@@ -8,6 +8,7 @@ namespace expanse
 {
 	template<class T> struct CorePtr;
 	template<class T> struct ResultRV;
+	struct IAllocator;
 
 	class Mutex : public CoreObject
 	{
@@ -16,6 +17,6 @@ namespace expanse
 		virtual bool TryLock() = 0;
 		virtual void Unlock() = 0;
 
-		static ResultRV<CorePtr<Mutex>> Create();
+		static ResultRV<CorePtr<Mutex>> Create(IAllocator *alloc);
 	};
 }

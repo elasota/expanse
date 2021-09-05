@@ -9,6 +9,7 @@ namespace expanse
 {
 	template<class T> struct CorePtr;
 	template<class T> struct ResultRV;
+	struct IAllocator;
 
 	class ThreadEvent : public CoreObject
 	{
@@ -18,7 +19,7 @@ namespace expanse
 		virtual void Set() = 0;
 		virtual void Reset() = 0;
 
-		static ResultRV<CorePtr<ThreadEvent>> Create(const UTF8StringView_t &name, bool autoReset, bool startSignaled);
+		static ResultRV<CorePtr<ThreadEvent>> Create(IAllocator *alloc, const UTF8StringView_t &name, bool autoReset, bool startSignaled);
 
 	protected:
 		ThreadEvent();
