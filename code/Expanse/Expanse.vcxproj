@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>15.0</VCProjectVersion>
+    <ProjectGuid>{2A1A3732-95AE-4F70-99F2-0245014D4A73}</ProjectGuid>
+    <RootNamespace>Expanse</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v141</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v141</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v141</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v141</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup />
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <SDLCheck>true</SDLCheck>
+      <ConformanceMode>true</ConformanceMode>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <SDLCheck>true</SDLCheck>
+      <ConformanceMode>true</ConformanceMode>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <ConformanceMode>true</ConformanceMode>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <ConformanceMode>true</ConformanceMode>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="AsyncFileRequest_Win32.cpp" />
+    <ClCompile Include="AsyncFileSystem_Win32.cpp" />
+    <ClCompile Include="CorePtr.cpp" />
+    <ClCompile Include="FileStream_Win32.cpp" />
+    <ClCompile Include="Main_Win32.cpp" />
+    <ClCompile Include="Mem.cpp" />
+    <ClCompile Include="Mem_Win32.cpp" />
+    <ClCompile Include="MutexLock.cpp" />
+    <ClCompile Include="Mutex_Win32.cpp" />
+    <ClCompile Include="ServiceCollection.cpp" />
+    <ClCompile Include="SynchronousFileSystem_Win32.cpp" />
+    <ClCompile Include="ThreadEvent_Win32.cpp" />
+    <ClCompile Include="Thread_Win32.cpp" />
+    <ClCompile Include="Unicode.cpp" />
+    <ClCompile Include="WindowsGlobals.cpp" />
+    <ClCompile Include="WindowsUtilsl.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="ArrayPtr.h" />
+    <ClInclude Include="ArrayView.h" />
+    <ClInclude Include="AsyncFileRequest.h" />
+    <ClInclude Include="AsyncFileRequest_Win32.h" />
+    <ClInclude Include="AsyncFileSystem_Win32.h" />
+    <ClInclude Include="BuildConfig.h" />
+    <ClInclude Include="Cloner.h" />
+    <ClInclude Include="Comparer.h" />
+    <ClInclude Include="CPreprocessor.h" />
+    <ClInclude Include="ErrorCode.h" />
+    <ClInclude Include="Hash.h" />
+    <ClInclude Include="Hasher.h" />
+    <ClInclude Include="HashMap.h" />
+    <ClInclude Include="Mutex.h" />
+    <ClInclude Include="MutexLock.h" />
+    <ClInclude Include="Mutex_Win32.h" />
+    <ClInclude Include="Optional.h" />
+    <ClInclude Include="PreprocessorUtils.h" />
+    <ClInclude Include="Result.h" />
+    <ClInclude Include="ExpAssert.h" />
+    <ClInclude Include="CoreObject.h" />
+    <ClInclude Include="CorePtr.h" />
+    <ClInclude Include="AsyncFileSystem.h" />
+    <ClInclude Include="FileStream.h" />
+    <ClInclude Include="FileStream_Win32.h" />
+    <ClInclude Include="IncludeWindows.h" />
+    <ClInclude Include="Mem.h" />
+    <ClInclude Include="ResultRV.h" />
+    <ClInclude Include="ServiceCollection.h" />
+    <ClInclude Include="Services.h" />
+    <ClInclude Include="StaticArray.h" />
+    <ClInclude Include="StringProto.h" />
+    <ClInclude Include="StrUtils.h" />
+    <ClInclude Include="SynchronousFileSystem.h" />
+    <ClInclude Include="SynchronousFileSystem_Win32.h" />
+    <ClInclude Include="TextEncoding.h" />
+    <ClInclude Include="Thread.h" />
+    <ClInclude Include="ThreadEvent.h" />
+    <ClInclude Include="ThreadEvent_Win32.h" />
+    <ClInclude Include="Thread_Win32.h" />
+    <ClInclude Include="Unicode.h" />
+    <ClInclude Include="String.h" />
+    <ClInclude Include="StringView.h" />
+    <ClInclude Include="Vector.h" />
+    <ClInclude Include="WindowsGlobals.h" />
+    <ClInclude Include="WindowsUtils.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\lua-5.4.3\lua.vcxproj">
+      <Project>{ea5ae6b9-d02f-4a33-965c-92f5f5fde505}</Project>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
