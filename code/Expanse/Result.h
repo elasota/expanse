@@ -3,6 +3,7 @@
 #include "BuildConfig.h"
 #include "ErrorCode.h"
 #include "ExpAssert.h"
+#include "PreprocessorUtils.h"
 
 namespace expanse
 {
@@ -15,6 +16,7 @@ namespace expanse
 		~Result();
 
 		ErrorCode GetErrorCode() const;
+		bool IsOK() const;
 		void Handle();
 
 		Result &operator=(Result &&other);
@@ -45,6 +47,7 @@ namespace expanse
 		, m_isHandled(false)
 #endif
 	{
+		EXP_ASSERT_RESULT(errorCode);
 	}
 
 	inline Result::Result(Result &&other)
@@ -70,6 +73,12 @@ namespace expanse
 	{
 		return m_errorCode;
 	}
+
+	inline bool Result::IsOK() const
+	{
+		return m_errorCode == ErrorCode::kOK;
+	}
+
 
 	inline void Result::Handle()
 	{

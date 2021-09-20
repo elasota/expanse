@@ -144,9 +144,6 @@
     <ClInclude Include="StringProto.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="String.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="StringView.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -154,6 +151,15 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="IAllocator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="XString.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MemoryRWFileStream.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Numerics.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -176,9 +182,6 @@
     <ClCompile Include="FileStream_Win32.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="WindowsUtilsl.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="AsyncFileSystem_Win32.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -198,6 +201,18 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Mem.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="WindowsUtils.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Hasher.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MemoryRWFileStream.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Numerics.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

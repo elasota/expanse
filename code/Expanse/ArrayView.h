@@ -2,9 +2,14 @@
 
 #include <cstdint>
 #include <cstddef>
+#include <type_traits>
 
 namespace expanse
 {
+	template<class T> struct ArrayPtr;
+	template<class T> struct ResultRV;
+	struct IAllocator;
+
 	template<class T>
 	struct ArrayView
 	{
@@ -25,13 +30,23 @@ namespace expanse
 		bool operator==(const ArrayView<T> &other) const;
 		bool operator!=(const ArrayView<T> &other) const;
 
+		ResultRV<ArrayPtr<typename std::remove_const<T>::type>> Clone(IAllocator *alloc) const;
+		ResultRV<ArrayPtr<T>> CloneTake(IAllocator *alloc) const;
+
+		T *begin() const;
+		T *end() const;
+
 	private:
 		T *m_elements;
 		size_t m_size;
 	};
 }
 
+#include "ArrayPtr.h"
 #include "ExpAssert.h"
+#include "Mem.h"
+#include "ResultRV.h"
+
 #include <limits>
 
 namespace expanse
@@ -104,5 +119,57 @@ namespace expanse
 	bool ArrayView<T>::operator!=(const ArrayView<T> &other) const
 	{
 		return !((*this) == other);
+	}
+
+	template<class T>
+	ResultRV<ArrayPtr<typename std::remove_const<T>::type>> ArrayView<T>::Clone(IAllocator *alloc) const
+	{
+		typedef typename std::remove_const<T>::type NoConstT_t;
+
+		const size_t count = this->m_size;
+		if (count == 0)
+			return ArrayPtr<NoConstT_t>();
+
+		CHECK_RV(ArrayPtr<NoConstT_t>, clone, NewArrayUninitialized<NoConstT_t>(alloc, m_size));
+		ArrayView<NoConstT_t> cloneView(clone);
+
+		const T *thisElements = m_elements;
+		NoConstT_t *cloneElements = &cloneView[0];
+
+		for (size_t i = 0; i < count; i++)
+			new (cloneElements + i) NoConstT_t(thisElements[i]);
+
+		return clone;
+	}
+
+	template<class T>
+	ResultRV<ArrayPtr<T>> ArrayView<T>::CloneTake(IAllocator *alloc) const
+	{
+		const size_t count = this->m_size;
+		if (count == 0)
+			return ArrayPtr<T>();
+
+		CHECK_RV(ArrayPtr<T>, clone, NewArrayUninitialized<T>(alloc, m_size));
+		ArrayView<T> cloneView(clone);
+
+		T *thisElements = m_elements;
+		T *cloneElements = &cloneView[0];
+
+		for (size_t i = 0; i < count; i++)
+			new (cloneElements + i) T(std::move(thisElements[i]));
+
+		return clone;
+	}
+
+	template<class T>
+	T *ArrayView<T>::begin() const
+	{
+		return m_elements;
+	}
+
+	template<class T>
+	T *ArrayView<T>::end() const
+	{
+		return m_elements + m_size;
 	}
 }

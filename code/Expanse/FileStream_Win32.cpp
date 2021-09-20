@@ -87,7 +87,7 @@ namespace expanse
 				return cumulativeRead;
 
 			buffer = static_cast<void*>(static_cast<uint8_t*>(buffer) + numberRead);
-			size -= cumulativeRead;
+			size -= static_cast<size_t>(numberRead);
 		}
 
 		DWORD numberRead = 0;
@@ -95,6 +95,30 @@ namespace expanse
 			return ErrorCode::kIOError;
 
 		return cumulativeRead + static_cast<size_t>(numberRead);
+	}
+
+	ResultRV<size_t> FileStream_Win32::Write(const void *buffer, size_t size)
+	{
+		size_t cumulativeWritten = 0;
+		while (size > MAXDWORD)
+		{
+			DWORD numberWritten = 0;
+			if (!WriteFile(m_handle, buffer, MAXDWORD, &numberWritten, nullptr))
+				return ErrorCode::kIOError;
+
+			cumulativeWritten += static_cast<size_t>(numberWritten);
+			if (numberWritten < MAXDWORD)
+				return cumulativeWritten;
+
+			buffer = static_cast<const void*>(static_cast<const uint8_t*>(buffer) + numberWritten);
+			size -= static_cast<size_t>(numberWritten);
+		}
+
+		DWORD numberWritten = 0;
+		if (!WriteFile(m_handle, buffer, static_cast<DWORD>(size), &numberWritten, nullptr))
+			return ErrorCode::kIOError;
+
+		return cumulativeWritten + static_cast<size_t>(numberWritten);
 	}
 
 	void FileStream_Win32::Init(HANDLE handle, bool readable, bool writeable)

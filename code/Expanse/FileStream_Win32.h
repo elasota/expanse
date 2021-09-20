@@ -26,6 +26,7 @@ namespace expanse
 
 	protected:
 		ResultRV<size_t> Read(void *buffer, size_t size) override;
+		ResultRV<size_t> Write(const void *buffer, size_t size) override;
 
 	private:
 		friend class SynchronousFileSystem_Win32;

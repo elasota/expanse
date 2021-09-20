@@ -16,18 +16,18 @@ namespace expanse
 	public:
 		StringView();
 		explicit StringView(const char *str);
-		StringView(const uint8_t *chars, size_t length);
+		StringView(const TChar *chars, size_t length);
 
-		ArrayView<const uint8_t> GetChars() const;
+		ArrayView<const TChar> GetChars() const;
 		size_t Length() const;
 
 		bool operator==(const StringView<TChar, TEncoding> &other) const;
 		bool operator!=(const StringView<TChar, TEncoding> &other) const;
 
-		ResultRV<String<TChar, TEncoding>> CloneToString(IAllocator *alloc) const;
+		ResultRV<XString<TChar, TEncoding>> CloneToString(IAllocator *alloc) const;
 
 	private:
-		const uint8_t *m_chars;
+		const TChar *m_chars;
 		size_t m_length;
 	};
 }
@@ -39,30 +39,31 @@ namespace expanse
 {
 	template<class TChar, TextEncoding TEncoding>
 	inline StringView<TChar, TEncoding>::StringView()
-		: m_chars(reinterpret_cast<const uint8_t*>(""))
+		: m_chars(reinterpret_cast<const TChar*>(""))
 		, m_length(0)
-	{
-	}
-
-	template<class TChar, TextEncoding TEncoding>
-	inline StringView<TChar, TEncoding>::StringView(const char *str)
-		: m_chars(reinterpret_cast<const TChar*>(str))
-		, m_length(strlen(str))
 	{
 		static_assert(sizeof(TChar) == sizeof(char), "Can't static initialize string view from char strings of different size");
 	}
 
 	template<class TChar, TextEncoding TEncoding>
-	inline StringView<TChar, TEncoding>::StringView(const uint8_t *chars, size_t length)
+	inline StringView<TChar, TEncoding>::StringView(const char *str)
+		: m_chars(reinterpret_cast<const TChar*>(str))
+		, m_length(std::strlen(str))
+	{
+		static_assert(sizeof(TChar) == sizeof(char), "Can't static initialize string view from char strings of different size");
+	}
+
+	template<class TChar, TextEncoding TEncoding>
+	inline StringView<TChar, TEncoding>::StringView(const TChar *chars, size_t length)
 		: m_chars(chars)
 		, m_length(length)
 	{
 	}
 
 	template<class TChar, TextEncoding TEncoding>
-	inline ArrayView<const uint8_t> StringView<TChar, TEncoding>::GetChars() const
+	inline ArrayView<const TChar> StringView<TChar, TEncoding>::GetChars() const
 	{
-		return ArrayView<const uint8_t>(m_chars, m_length);
+		return ArrayView<const TChar>(m_chars, m_length);
 	}
 
 	template<class TChar, TextEncoding TEncoding>
@@ -77,7 +78,6 @@ namespace expanse
 		return !((*this) == other);
 	}
 
-
 	template<class TChar, TextEncoding TEncoding>
 	inline bool StringView<TChar, TEncoding>::operator==(const StringView<TChar, TEncoding> &other) const
 	{
@@ -91,8 +91,8 @@ namespace expanse
 	}
 
 	template<class TChar, TextEncoding TEncoding>
-	ResultRV<String<TChar, TEncoding>> StringView<TChar, TEncoding>::CloneToString(IAllocator *alloc) const
+	ResultRV<XString<TChar, TEncoding>> StringView<TChar, TEncoding>::CloneToString(IAllocator *alloc) const
 	{
-		return String<TChar, TEncoding>::CreateFromBytes(alloc, ArrayView<const TChar>(m_chars, m_length));
+		return XString<TChar, TEncoding>::CreateFromBytes(alloc, ArrayView<const TChar>(m_chars, m_length));
 	}
 }

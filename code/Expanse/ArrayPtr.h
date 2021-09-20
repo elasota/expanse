@@ -140,12 +140,15 @@ namespace expanse
 	{
 		if (this != &other)
 		{
-			T *oldElements = m_elements;
+			ArrayPtr<T> temp(std::move(*this));
+
 			m_elements = other.m_elements;
 			m_size = other.m_size;
+			m_alloc = other.m_alloc;
 
 			other.m_elements = nullptr;
 			other.m_size = 0;
+			other.m_alloc = nullptr;
 		}
 
 		return *this;

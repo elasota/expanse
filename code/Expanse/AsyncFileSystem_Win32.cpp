@@ -24,6 +24,7 @@ namespace expanse
 		, m_queueTail(nullptr)
 		, m_inProgressItem(nullptr)
 		, m_initialized(false)
+		, m_isQuitting(false)
 	{
 	}
 
@@ -62,6 +63,7 @@ namespace expanse
 		m_ioWakeEvent = std::move(ioWakeEvent);
 		
 		CHECK_RV(CorePtr<Thread>, ioThread, Thread::CreateThread(alloc, StaticThreadFunc, this, UTF8StringView_t("AsyncFileSystem")));
+		m_ioThread = std::move(ioThread);
 
 		m_initialized = true;
 		return ErrorCode::kOK;
@@ -84,6 +86,8 @@ namespace expanse
 		id.m_device = std::move(deviceCopy);
 		id.m_path = std::move(pathCopy);
 
+		workItemRef->m_id = std::move(id);
+
 		{
 			MutexLock lock(m_queueMutex);
 			EXP_ASSERT(!m_isQuitting);
@@ -100,6 +104,8 @@ namespace expanse
 			}
 		}
 
+		m_ioWakeEvent->Set();
+
 		asyncRequest->Init(std::move(workItem));
 
 		return CorePtr<AsyncFileRequest>(std::move(asyncRequest));
@@ -110,7 +116,7 @@ namespace expanse
 	{
 		MutexLock lock(m_queueMutex);
 
-		m_inProgressItem->m_itemState = WorkItemState::kCancelled;
+		workItem->m_itemState = WorkItemState::kCancelled;
 
 		if (m_inProgressItem == workItem)
 			m_inProgressItem = nullptr;
@@ -170,7 +176,8 @@ namespace expanse
 
 			WorkItemState outState = WorkItemState::kQueued;
 			ArrayPtr<uint8_t> contents;
-			TryLoadWorkItem(identifier, outState, contents);
+			ErrorCode outErrorCode = ErrorCode::kOK;
+			TryLoadWorkItem(identifier, outState, outErrorCode, contents);
 
 			{
 				MutexLock lock(m_queueMutex);
@@ -180,21 +187,30 @@ namespace expanse
 				{
 					inProgressItem->m_result = std::move(contents);
 					inProgressItem->m_itemState = outState;
+					inProgressItem->m_errorCode = outErrorCode;
+					inProgressItem->m_id = std::move(identifier);
+
+					// Must be last
 					inProgressItem->m_finished.fetch_add(1, std::memory_order_release);
+
 					m_inProgressItem = nullptr;
 				}
 			}
 		}
 	}
 
-	void AsyncFileSystem_Win32::TryLoadWorkItem(const WorkItemIdentifier &identifier, WorkItemState &outState, ArrayPtr<uint8_t> &outContents)
+	void AsyncFileSystem_Win32::TryLoadWorkItem(const WorkItemIdentifier &identifier, WorkItemState &outState, ErrorCode &outErrorCode, ArrayPtr<uint8_t> &outContents)
 	{
 		ArrayPtr<uint8_t> contents;
 
-		Result result(TryLoadWorkItemChecked(identifier, outContents));
+		Result result(TryLoadWorkItemChecked(identifier, contents));
 		result.Handle();
 
-		if (result.GetErrorCode() == ErrorCode::kOK)
+		const ErrorCode errorCode = result.GetErrorCode();
+
+		outErrorCode = errorCode;
+
+		if (errorCode == ErrorCode::kOK)
 		{
 			outState = WorkItemState::kFinished;
 			outContents = std::move(contents);
@@ -217,6 +233,9 @@ namespace expanse
 		CHECK_RV(ArrayPtr<uint8_t>, contents, NewArray<uint8_t>(alloc, static_cast<size_t>(fileSize)));
 		CHECK_RV(size_t, amountRead, stream->ReadPartial(ArrayView<uint8_t>(contents)));
 
+		if (amountRead != fileSize)
+			return ErrorCode::kIOError;
+
 		outContents = std::move(contents);
 
 		return ErrorCode::kOK;
@@ -226,6 +245,8 @@ namespace expanse
 		: m_itemState(WorkItemState::kQueued)
 		, m_prev(nullptr)
 		, m_next(nullptr)
+		, m_errorCode(ErrorCode::kOK)
+		, m_finished(0)
 	{
 	}
 }

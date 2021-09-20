@@ -13,7 +13,7 @@ namespace expanse
 
 	class AsyncFileSystem : public CoreObject
 	{
-		virtual Result Initialize() = 0;
+	public:
 		virtual ResultRV<CorePtr<AsyncFileRequest>> Retrieve(const UTF8StringView_t &device, const UTF8StringView_t &name) = 0;
 	};
 }

@@ -118,6 +118,9 @@ namespace expanse
 		HashMapIterator<TKey, TValue> Find(const TKeyCandidate &keyCandidate);
 
 		template<class TKeyCandidate>
+		bool Contains(const TKeyCandidate &keyCandidate) const;
+
+		template<class TKeyCandidate>
 		bool Remove(const TKeyCandidate &keyCandidate);
 
 		void Remove(const HashMapIterator<TKey, TValue> &iterator);
@@ -147,9 +150,6 @@ namespace expanse
 		Result AutoRehash();
 
 		Result InsertNew(TKey &&key, TValue &&value, Hash_t keyHash, size_t keyMainPosition, size_t mpValueMPPlusOne, bool mayResize);
-
-		template<class TKeyCandidate>
-		size_t FindIndex(const TKeyCandidate &keyCandidate);
 
 		void RemoveIndex(size_t index);
 
@@ -357,7 +357,7 @@ namespace expanse
 		CHECK_RV(TKey, clonedKey, Cloner<TKey>::Clone(key));
 		CHECK_RV(TValue, clonedValue, Cloner<TValue>::Clone(value));
 
-		return Insert(Move(clonedKey), Move(clonedValue));
+		return Insert(std::move(clonedKey), std::move(clonedValue));
 	}
 
 	template<class TKey, class TValue>
@@ -365,7 +365,7 @@ namespace expanse
 	{
 		CHECK_RV(TValue, clonedValue, Cloner<TValue>::Clone(value));
 
-		return Insert(Move(key), Move(clonedValue));
+		return Insert(std::move(key), std::move(clonedValue));
 	}
 
 	template<class TKey, class TValue>
@@ -373,7 +373,7 @@ namespace expanse
 	{
 		CHECK_RV(TKey, clonedKey, Cloner<TKey>::Clone(key));
 
-		return Insert(Move(clonedKey), Move(value));
+		return Insert(std::move(clonedKey), std::move(value));
 	}
 
 	template<class TKey, class TValue>
@@ -381,7 +381,7 @@ namespace expanse
 	{
 		if (m_capacity == 0)
 		{
-			RKC_CHECK(Rehash(8));
+			CHECK(Rehash(8));
 		}
 
 		const Hash_t keyHash = Hasher<TKey>::Compute(key);
@@ -396,9 +396,9 @@ namespace expanse
 			{
 				if (valueMPPlusOne != 0 && Comparer<TKey>::StrictlyEqual(m_keys[index], key))
 				{
-					m_values[index] = value;
+					m_values[index] = std::move(value);
 					HashMapUtils::SetCompactValue(m_valueMainPosPlusOne, m_cvPrecision, index, keyMainPosition + 1);
-					return Result::Ok();
+					return ErrorCode::kOK;
 				}
 
 				const size_t nextIndexPlusOne = HashMapUtils::GetCompactValue(m_nextPlusOne, m_cvPrecision, index);
@@ -410,7 +410,7 @@ namespace expanse
 			}
 		}
 
-		return InsertNew(Move(key), Move(value), keyHash, keyMainPosition, mpValueMPPlusOne, true);
+		return InsertNew(std::move(key), std::move(value), keyHash, keyMainPosition, mpValueMPPlusOne, true);
 	}
 
 
@@ -419,24 +419,39 @@ namespace expanse
 	template<class TKeyCandidate>
 	HashMapConstIterator<TKey, TValue> HashMap<TKey, TValue>::Find(const TKeyCandidate &keyCandidate) const
 	{
-		return HashMapConstIterator<TKey, TValue>(*this, FindIndex(keyCandidate));
+		Optional<size_t> keyIndex = this->FindKey<TKeyCandidate>(keyCandidate);
+		if (!keyIndex.IsSet())
+			return HashMapConstIterator<TKey, TValue>(*this, this->m_capacity);
+		else
+			return HashMapConstIterator<TKey, TValue>(*this, keyIndex.Get());
 	}
 
 	template<class TKey, class TValue>
 	template<class TKeyCandidate>
 	HashMapIterator<TKey, TValue> HashMap<TKey, TValue>::Find(const TKeyCandidate &keyCandidate)
 	{
-		return HashMapIterator<TKey, TValue>(*this, FindIndex(keyCandidate));
+		Optional<size_t> keyIndex = this->FindKey<TKeyCandidate>(keyCandidate);
+		if (!keyIndex.IsSet())
+			return HashMapIterator<TKey, TValue>(*this, this->m_capacity);
+		else
+			return HashMapIterator<TKey, TValue>(*this, keyIndex.Get());
+	}
+
+	template<class TKey, class TValue>
+	template<class TKeyCandidate>
+	bool HashMap<TKey, TValue>::Contains(const TKeyCandidate &keyCandidate) const
+	{
+		return this->FindKey<TKeyCandidate>(keyCandidate).IsSet();
 	}
 
 	template<class TKey, class TValue>
 	template<class TKeyCandidate>
 	bool HashMap<TKey, TValue>::Remove(const TKeyCandidate &keyCandidate)
 	{
-		const size_t index = FindIndex<TKeyCandidate>(keyCandidate);
-		if (index != m_capacity)
+		const Optional<size_t> index = this->FindKey<TKeyCandidate>(keyCandidate);
+		if (index.IsSet())
 		{
-			this->RemoveIndex(index);
+			this->RemoveIndex(index.Get());
 			return true;
 		}
 		else
@@ -526,7 +541,15 @@ namespace expanse
 
 		size_t bufferSize = nextPlusOnePos + cvSize * size;
 
-		void *newBuffer = m_alloc.Alloc(bufferSize);
+		static const size_t possibleAligns[] = { alignof(TKey), alignof(TValue), alignof(Hash_t), alignof(size_t) };
+		size_t maxAlign = 1;
+		for (size_t alignment : possibleAligns)
+		{
+			if (alignment > maxAlign)
+				maxAlign = alignment;
+		}
+
+		void *newBuffer = m_alloc.Alloc(bufferSize, maxAlign);
 		if (!newBuffer)
 			return ErrorCode::kOutOfMemory;
 
@@ -558,7 +581,7 @@ namespace expanse
 			{
 				const size_t mainPos = HashMapUtils::GetMainPosition(oldHashes[i], size);
 				const size_t mpValueMainPosPlusOne = HashMapUtils::GetCompactValue(m_valueMainPosPlusOne, cvPrecision, mainPos);
-				Result insertResult(InsertNew(Move(oldKeys[i]), Move(oldValues[i]), oldHashes[i], mainPos, mpValueMainPosPlusOne, false));
+				Result insertResult(InsertNew(std::move(oldKeys[i]), std::move(oldValues[i]), oldHashes[i], mainPos, mpValueMainPosPlusOne, false));
 				if (!insertResult.IsOK())
 				{
 					for (size_t cleanupIndex = 0; cleanupIndex < oldCapacity; cleanupIndex++)
@@ -588,7 +611,7 @@ namespace expanse
 
 		m_alloc.Release(oldBuffer);
 
-		return Result::Ok();
+		return ErrorCode::kOK;
 	}
 
 	template<class TKey, class TValue>
@@ -609,13 +632,13 @@ namespace expanse
 		if (mpValueMPPlusOne == 0)
 		{
 			// Main position is free
-			new (&m_keys[keyMainPosition]) TKey(Move(key));
-			new (&m_values[keyMainPosition]) TValue(Move(value));
+			new (&m_keys[keyMainPosition]) TKey(std::move(key));
+			new (&m_values[keyMainPosition]) TValue(std::move(value));
 			m_hashes[keyMainPosition] = keyHash;
 			HashMapUtils::SetCompactValue(m_valueMainPosPlusOne, m_cvPrecision, keyMainPosition, keyMainPosition + 1);
 			m_used++;
 
-			return Result::Ok();
+			return ErrorCode::kOK;
 		}
 
 		while (m_freeSlotScan < m_capacity)
@@ -628,14 +651,14 @@ namespace expanse
 		if (m_freeSlotScan == m_capacity)
 		{
 			if (!mayResize)
-				return rkc::ResultCodes::kInternalError;
+				return ErrorCode::kInternalError;
 
-			RKC_CHECK(AutoRehash());
+			CHECK(AutoRehash());
 
 			const size_t keyMainPosition = HashMapUtils::GetMainPosition(keyHash, m_capacity);
 			const size_t mpValueMPPlusOne = HashMapUtils::GetCompactValue(this->m_valueMainPosPlusOne, m_cvPrecision, keyMainPosition);
 
-			return InsertNew(Move(key), Move(value), keyHash, keyMainPosition, mpValueMPPlusOne, false);
+			return InsertNew(std::move(key), std::move(value), keyHash, keyMainPosition, mpValueMPPlusOne, false);
 		}
 
 		const size_t freeSlotIndex = m_freeSlotScan++;
@@ -658,15 +681,15 @@ namespace expanse
 			HashMapUtils::SetCompactValue(m_nextPlusOne, m_cvPrecision, precedingIndex, freeSlotIndex + 1);
 			HashMapUtils::SetCompactValue(m_nextPlusOne, m_cvPrecision, keyMainPosition, 0);
 
-			new (&m_keys[freeSlotIndex]) TKey(Move(m_keys[keyMainPosition]));
-			new (&m_values[freeSlotIndex]) TValue(Move(m_values[keyMainPosition]));
+			new (&m_keys[freeSlotIndex]) TKey(std::move(m_keys[keyMainPosition]));
+			new (&m_values[freeSlotIndex]) TValue(std::move(m_values[keyMainPosition]));
 			m_hashes[freeSlotIndex] = m_hashes[keyMainPosition];
 			HashMapUtils::SetCompactValue(this->m_valueMainPosPlusOne, m_cvPrecision, freeSlotIndex, mpValueMPPlusOne);
 
 			m_keys[keyMainPosition].~TKey();
 			m_values[keyMainPosition].~TValue();
-			new (&m_keys[keyMainPosition]) TKey(Move(key));
-			new (&m_values[keyMainPosition]) TValue(Move(value));
+			new (&m_keys[keyMainPosition]) TKey(std::move(key));
+			new (&m_values[keyMainPosition]) TValue(std::move(value));
 			m_hashes[keyMainPosition] = keyHash;
 
 			HashMapUtils::SetCompactValue(this->m_valueMainPosPlusOne, m_cvPrecision, keyMainPosition, keyMainPosition + 1);
@@ -681,38 +704,14 @@ namespace expanse
 			HashMapUtils::SetCompactValue(m_nextPlusOne, m_cvPrecision, freeSlotIndex, mpNextPlusOne);
 			HashMapUtils::SetCompactValue(m_nextPlusOne, m_cvPrecision, keyMainPosition, freeSlotIndex + 1);
 
-			new (&m_keys[freeSlotIndex]) TKey(Move(key));
-			new (&m_values[freeSlotIndex]) TValue(Move(value));
+			new (&m_keys[freeSlotIndex]) TKey(std::move(key));
+			new (&m_values[freeSlotIndex]) TValue(std::move(value));
 			m_hashes[freeSlotIndex] = keyHash;
 			HashMapUtils::SetCompactValue(this->m_valueMainPosPlusOne, m_cvPrecision, freeSlotIndex, keyMainPosition + 1);
 		}
 
 		m_used++;
-		return Result::Ok();
-	}
-
-	template<class TKey, class TValue>
-	template<class TKeyCandidate>
-	size_t HashMap<TKey, TValue>::FindIndex(const TKeyCandidate &keyCandidate)
-	{
-		const Hash_t keyHash = Hasher<TKey>::Compute(keyCandidate);
-		const size_t keyMainPosition = HashMapUtils::GetMainPosition(keyHash, m_capacity);
-		const size_t mpValueMPPlusOne = HashMapUtils::GetCompactValue(this->m_valueMainPosPlusOne, m_cvPrecision, keyMainPosition);
-
-		// Find existing key
-		{
-			size_t index = keyMainPosition;
-			size_t valueMPPlusOne = mpValueMPPlusOne;
-			for (;;)
-			{
-				if (valueMPPlusOne != 0 && Comparer<TKey>::StrictlyEqual(m_keys[index], keyCandidate))
-					return index;
-
-				const size_t nextIndexPlusOne = HashMapUtils::GetCompactValue(m_nextPlusOne, m_cvPrecision, index);
-				if (nextIndexPlusOne == 0)
-					return m_capacity;
-			}
-		}
+		return ErrorCode::kOK;
 	}
 
 	template<class TKey, class TValue>
@@ -723,7 +722,7 @@ namespace expanse
 			return Optional<size_t>();
 
 		const Hash_t keyHash = Hasher<TKey>::Compute(key);
-		const size_t keyMainPosition = HashMapUtils::GetMainPosition(keyHash);
+		const size_t keyMainPosition = HashMapUtils::GetMainPosition(keyHash, m_capacity);
 
 		size_t scanPosition = keyMainPosition;
 		for (;;)

@@ -15,19 +15,37 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Token.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="PreprocessorGrammar.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="CPreprocessor.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="TestCC.cpp">
+    <ClCompile Include="ms_charconv.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ms_xextra.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ms_xcharconv_ryu_tables.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="ms_charconv.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ms_xbit_ops.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ms_xcharconv.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ms_xcharconv_ryu.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ms_xcharconv_ryu_tables.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ms_xerrc.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ms_xextra.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

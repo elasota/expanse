@@ -1,0 +1,33 @@
+xcc HL assembly:
+byte - LType of 
+
+OpenDataSection - Declares a data section
+	flags (byte)
+		mergeable
+		structural
+		readonly
+	structure reference (index) (if structural)
+
+Data section opcodes:
+	0-13: Emit LType count x (opcode + 1) (low 4 bits are LType)
+		0: S8
+		1: S16
+		2: S32
+		3: S64
+		4: U8
+		5: U16
+		6: U32
+		7: U64
+		8: F32,
+		9: F64,
+		10: NULL
+		11: DATA
+		12: DATAOFFSET
+	14: Seek (low 4 bits are signed offset, except 0 means long-seek)
+	15: End of section
+
+Data coded LTypes are all coded verbatim
+
+
+
+OpenCodeSection:

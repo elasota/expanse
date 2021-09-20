@@ -58,15 +58,19 @@
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="Expanse.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="Expanse.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="Expanse.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="Expanse.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup />
@@ -126,17 +130,20 @@
     <ClCompile Include="AsyncFileRequest_Win32.cpp" />
     <ClCompile Include="AsyncFileSystem_Win32.cpp" />
     <ClCompile Include="FileStream_Win32.cpp" />
+    <ClCompile Include="Hasher.cpp" />
     <ClCompile Include="Main_Win32.cpp" />
     <ClCompile Include="Mem.cpp" />
+    <ClCompile Include="MemoryRWFileStream.cpp" />
     <ClCompile Include="MutexLock.cpp" />
     <ClCompile Include="Mutex_Win32.cpp" />
+    <ClCompile Include="Numerics.cpp" />
     <ClCompile Include="ServiceCollection.cpp" />
     <ClCompile Include="SynchronousFileSystem_Win32.cpp" />
     <ClCompile Include="ThreadEvent_Win32.cpp" />
     <ClCompile Include="Thread_Win32.cpp" />
     <ClCompile Include="Unicode.cpp" />
     <ClCompile Include="WindowsGlobals.cpp" />
-    <ClCompile Include="WindowsUtilsl.cpp" />
+    <ClCompile Include="WindowsUtils.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ArrayPtr.h" />
@@ -153,9 +160,11 @@
     <ClInclude Include="Hasher.h" />
     <ClInclude Include="HashMap.h" />
     <ClInclude Include="IAllocator.h" />
+    <ClInclude Include="MemoryRWFileStream.h" />
     <ClInclude Include="Mutex.h" />
     <ClInclude Include="MutexLock.h" />
     <ClInclude Include="Mutex_Win32.h" />
+    <ClInclude Include="Numerics.h" />
     <ClInclude Include="Optional.h" />
     <ClInclude Include="PreprocessorUtils.h" />
     <ClInclude Include="Result.h" />
@@ -181,15 +190,18 @@
     <ClInclude Include="ThreadEvent_Win32.h" />
     <ClInclude Include="Thread_Win32.h" />
     <ClInclude Include="Unicode.h" />
-    <ClInclude Include="String.h" />
+    <ClInclude Include="XString.h" />
     <ClInclude Include="StringView.h" />
     <ClInclude Include="Vector.h" />
     <ClInclude Include="WindowsGlobals.h" />
     <ClInclude Include="WindowsUtils.h" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="cc\cc.vcxproj">
+    <ProjectReference Include="..\cc\cc.vcxproj">
       <Project>{12bd9f08-3c6b-4b8b-b3a1-71b75f41294f}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\thirdparty\msstl\msstl.vcxproj">
+      <Project>{49e58957-b405-4a36-b0a3-7960c06011fb}</Project>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -22,6 +22,9 @@ namespace expanse
 		operator ArrayView<T>();
 		operator ArrayView<const T>() const;
 
+		ArrayView<T> View();
+		ArrayView<const T> ConstView() const;
+
 		T &operator[](size_t index);
 		const T &operator[](size_t index) const;
 
@@ -111,6 +114,20 @@ namespace expanse
 	}
 
 	template<class T, size_t TSize>
+	ArrayView<T> StaticArray<T, TSize>::View()
+	{
+		return ArrayView<T>(m_d.m_elements, TSize);
+	}
+
+	template<class T, size_t TSize>
+	ArrayView<const T> StaticArray<T, TSize>::ConstView() const
+	{
+		return ArrayView<const T>(m_d.m_elements, TSize);
+	}
+
+
+
+	template<class T, size_t TSize>
 	T &StaticArray<T, TSize>::operator[](size_t index)
 	{
 		EXP_ASSERT(index <= TSize);
@@ -134,5 +151,11 @@ namespace expanse
 	template<class T, size_t TSize>
 	StaticArray<T, TSize>::DelayedInitElements::~DelayedInitElements()
 	{
+	}
+
+	template<class T, size_t TSize>
+	size_t StaticArray<T, TSize>::Size()
+	{
+		return TSize;
 	}
 }

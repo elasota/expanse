@@ -3,7 +3,7 @@
   <ImportGroup Label="PropertySheets" />
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
-    <IncludePath>$(SolutionDir)code\Expanse;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)thirdparty\xxhash;$(SolutionDir)thirdparty\msstl;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup />
   <ItemGroup />

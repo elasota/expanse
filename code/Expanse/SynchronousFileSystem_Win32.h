@@ -2,7 +2,7 @@
 
 #include "SynchronousFileSystem.h"
 #include "StringProto.h"
-#include "String.h"
+#include "XString.h"
 
 namespace expanse
 {
@@ -18,7 +18,7 @@ namespace expanse
 
 		ResultRV<CorePtr<FileStream>> Open(const UTF8StringView_t &device, const UTF8StringView_t &path, Permission permission, CreationDisposition creationDisposition) override;
 
-		Result SetGamePath(const UTF8StringView_t &path);
+		Result SetGamePath(const UTF8StringView_t &gamePath);
 
 	private:
 		ResultRV<ArrayPtr<wchar_t>> CanonicalizePath(const UTF8StringView_t &device, const UTF8StringView_t &path);

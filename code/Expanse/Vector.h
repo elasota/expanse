@@ -6,47 +6,60 @@ namespace expanse
 {
 	template<class T> struct ArrayView;
 	struct Result;
+	struct IAllocator;
 
 	template<class T>
 	struct Vector
 	{
 	public:
-		Vector();
+		explicit Vector(IAllocator *alloc);
 		Vector(Vector<T> &&other);
 		~Vector();
 
 		size_t Size() const;
 		size_t Capacity() const;
-		operator ArrayView<T>() const;
+
+		ArrayView<T> View();
+		ArrayView<const T> ConstView() const;
+
 		T &operator[](size_t index);
 		const T &operator[](size_t index) const;
 
 		Result Resize(size_t newSize);
 		Result Add(T &&item);
 		Result Add(const T &item);
+		Result Add(const ArrayView<T> &elements);
+		Result Add(const ArrayView<const T> &elements);
+
+		Vector<T> &operator=(Vector<T> &&other);
 
 	private:
 		Vector(const Vector<T> &other) = delete;
 		Result ReserveAdditional(size_t size);
 
+		Vector<T> &operator=(const Vector<T> &other) = delete;
+
 		T *m_array;
+		IAllocator *m_alloc;
 		size_t m_size;
 		size_t m_capacity;
 	};
 }
 
 #include "ArrayView.h"
-#include "Mem.h"
+#include "IAllocator.h"
+#include "Result.h"
 
 #include <new>
 
 namespace expanse
 {
 	template<class T>
-	Vector<T>::Vector()
+	Vector<T>::Vector(IAllocator *alloc)
 		: m_array(nullptr)
 		, m_size(0)
 		, m_capacity(0)
+		, m_alloc(alloc)
 	{
 	}
 
@@ -55,6 +68,7 @@ namespace expanse
 		: m_array(other.m_array)
 		, m_size(other.m_size)
 		, m_capacity(other.m_capacity)
+		, m_alloc(other.m_alloc)
 	{
 		other.m_array = nullptr;
 		other.m_size = 0;
@@ -65,9 +79,12 @@ namespace expanse
 	Vector<T>::~Vector()
 	{
 		T *elements = m_array;
-		const size_t size = 0;
-		for (size_t i = 0; i < size; i++)
-			elements[i].~T();
+		size_t size = m_size;
+		while (size > 0)
+		{
+			size--;
+			elements[size].~T();
+		}
 	}
 
 	template<class T>
@@ -83,9 +100,15 @@ namespace expanse
 	}
 
 	template<class T>
-	Vector<T>::operator ArrayView<T>() const
+	ArrayView<T> Vector<T>::View()
 	{
-		return ArrayView<T>(m_array.GetBuffer(), m_size);
+		return ArrayView<T>(m_array, m_size);
+	}
+
+	template<class T>
+	ArrayView<const T> Vector<T>::ConstView() const
+	{
+		return ArrayView<T>(m_array, m_size);
 	}
 
 	template<class T>
@@ -118,7 +141,7 @@ namespace expanse
 			for (size_t i = 0; i < oldSize; i++)
 				elements[oldSize - i - 1].~T();
 
-			Mem::Release(m_array);
+			m_alloc->Release(elements);
 
 			m_size = 0;
 			m_capacity = 0;
@@ -146,9 +169,9 @@ namespace expanse
 		else
 		{
 			T *oldElements = m_array;
-			T *newArrayElements = static_cast<T*>(Mem::Alloc(sizeof(T) * newSize, alignof(T)));
+			T *newArrayElements = static_cast<T*>(m_alloc->Alloc(sizeof(T) * newSize, alignof(T)));
 
-			if (!newElements)
+			if (!newArrayElements)
 				return ErrorCode::kOutOfMemory;
 
 			if (newSize <= oldSize)
@@ -170,10 +193,12 @@ namespace expanse
 			m_array = newArrayElements;
 
 			if (oldElements)
-				Mem::Release(oldElements);
+				m_alloc->Release(oldElements);
 		}
 
 		m_size = m_capacity = newSize;
+
+		return ErrorCode::kOK;
 	}
 
 	template<class T>
@@ -183,6 +208,8 @@ namespace expanse
 
 		new (m_array + m_size) T(std::move(item));
 		m_size++;
+
+		return ErrorCode::kOK;
 	}
 
 	template<class T>
@@ -192,16 +219,67 @@ namespace expanse
 
 		new (m_array + m_size) T(item);
 		m_size++;
+
+		return ErrorCode::kOK;
 	}
 
 	template<class T>
-	Result Vector<T>::ReserveAdditional(size_t size)
+	Result Vector<T>::Add(const ArrayView<T> &elementsRef)
 	{
-		const size_t maxElements = std::numeric_limits<size_t>::max() / sizeof(T);
+		return Add(ArrayView<const T>(elementsRef));
+	}
 
-		if (m_capacity - m_size < size)
+	template<class T>
+	Result Vector<T>::Add(const ArrayView<const T> &elementsRef)
+	{
+		const ArrayView<const T> elements = elementsRef;
+
+		const size_t numElementsToAdd = elements.Size();
+		if (numElementsToAdd == 0)
 			return ErrorCode::kOK;
 
+		CHECK(ReserveAdditional(numElementsToAdd));
+
+		T *insertionPoint = m_array + m_size;
+		const T *elementsPtr = &elements[0];
+
+		for (size_t i = 0; i < numElementsToAdd; i++)
+			new (insertionPoint + i) T(elementsPtr[i]);
+
+		m_size += numElementsToAdd;
+
+		return ErrorCode::kOK;
+	}
+
+	template<class T>
+	Vector<T> &Vector<T>::operator=(Vector<T> &&other)
+	{
+		if (this != &other)
+		{
+			m_array = other.m_array;
+			m_size = other.m_size;
+			m_capacity = other.m_capacity;
+			m_alloc = other.m_alloc;
+
+			other.m_array = nullptr;
+			other.m_size = 0;
+			other.m_capacity = 0;
+			other.m_alloc = nullptr;
+		}
+
+		return *this;
+	}
+
+	template<class T>
+	Result Vector<T>::ReserveAdditional(size_t numAdditional)
+	{
+		const size_t maxElements = std::numeric_limits<size_t>::max() / sizeof(T);
+		const size_t size = m_size;
+
+		if (m_capacity - numAdditional < numAdditional)
+			return ErrorCode::kOK;
+
+		const size_t newCapacityRequired = size + numAdditional;
 		size_t newCapacity = 8;
 		if (newCapacity > maxElements)
 		{
@@ -210,7 +288,7 @@ namespace expanse
 		}
 		else
 		{
-			while (newCapacity < size)
+			while (newCapacity < newCapacityRequired)
 			{
 				const size_t maxExpandable = maxElements - newCapacity;
 				if (maxExpandable == 0)
@@ -226,9 +304,8 @@ namespace expanse
 
 		T *oldElements = m_array;
 		const size_t oldCapacity = m_capacity;
-		const size_t size = m_size;
 
-		T *newElements = static_cast<T*>(Mem::Alloc(sizeof(T)));
+		T *newElements = static_cast<T*>(m_alloc->Alloc(sizeof(T) * newCapacity, alignof(T)));
 		if (!newElements)
 			return ErrorCode::kOutOfMemory;
 
@@ -239,7 +316,7 @@ namespace expanse
 		}
 
 		if (oldElements)
-			Mem::Release(oldElements);
+			m_alloc->Release(oldElements);
 
 		m_array = newElements;
 		m_capacity = newCapacity;

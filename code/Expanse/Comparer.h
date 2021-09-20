@@ -22,12 +22,14 @@ namespace expanse
 	template<class T>
 	class DefaultComparer<T, false> : public SimpleComparer<T>
 	{
+	public:
 		static bool StrictlyEqual(const T &a, const T &b);
 	};
 
 	template<class T>
 	class DefaultComparer<T, true> : public SimpleComparer<T>
 	{
+	public:
 		static bool StrictlyEqual(const T &a, const T &b);
 	};
 

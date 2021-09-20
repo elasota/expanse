@@ -3,7 +3,7 @@
 #include "ArrayPtr.h"
 #include "ExpAssert.h"
 #include "ResultRV.h"
-#include "String.h"
+#include "XString.h"
 #include "ThreadEvent.h"
 #include "WindowsUtils.h"
 

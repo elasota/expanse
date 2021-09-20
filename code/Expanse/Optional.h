@@ -16,6 +16,9 @@ namespace expanse
 		Optional<T> &operator=(const T &object);
 		Optional<T> &operator=(T &&object);
 
+		Optional<T> &operator=(const Optional<T> &object);
+		Optional<T> &operator=(Optional<T> &&object);
+
 		bool IsSet() const;
 		void Clear();
 
@@ -110,6 +113,9 @@ namespace expanse
 			m_u.~ObjectOrNothingUnion();
 			new (&m_u) ObjectOrNothingUnion(object);
 		}
+		m_isSet = true;
+
+		return *this;
 	}
 
 	template<class T>
@@ -122,7 +128,67 @@ namespace expanse
 			m_u.~ObjectOrNothingUnion();
 			new (&m_u) ObjectOrNothingUnion(static_cast<T&&>(object));
 		}
+		m_isSet = true;
+
+		return *this;
 	}
+
+	template<class T>
+	Optional<T> &Optional<T>::operator=(const Optional<T> &other)
+	{
+		if (m_isSet)
+		{
+			if (other.m_isSet)
+				m_u.m_object = other.m_u.m_object;
+			else
+			{
+				m_u.m_object.~T();
+				m_u.~ObjectOrNothingUnion();
+				new (&m_u) ObjectOrNothingUnion();
+				m_isSet = false;
+			}
+		}
+		else
+		{
+			if (other.m_isSet)
+			{
+				m_u.~ObjectOrNothingUnion();
+				new (&m_u) ObjectOrNothingUnion(other.m_u.m_object);
+				m_isSet = true;
+			}
+		}
+
+		return *this;
+	}
+
+	template<class T>
+	Optional<T> &Optional<T>::operator=(Optional<T> &&other)
+	{
+		if (m_isSet)
+		{
+			if (other.m_isSet)
+				m_u.m_object = std::move(other.m_u.m_object);
+			else
+			{
+				m_u.m_object.~T();
+				m_u.~ObjectOrNothingUnion();
+				new (&m_u) ObjectOrNothingUnion();
+				m_isSet = false;
+			}
+		}
+		else
+		{
+			if (other.m_isSet)
+			{
+				m_u.~ObjectOrNothingUnion();
+				new (&m_u) ObjectOrNothingUnion(std::move(other.m_u.m_object));
+				m_isSet = true;
+			}
+		}
+
+		return *this;
+	}
+
 
 	template<class T>
 	bool Optional<T>::IsSet() const

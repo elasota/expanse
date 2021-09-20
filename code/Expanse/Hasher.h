@@ -36,7 +36,6 @@ namespace expanse
 	{
 	};
 
-
 	template<class T>
 	class Hasher final : public DefaultHasher<T, UseDefaultHash<T>::kValue>
 	{

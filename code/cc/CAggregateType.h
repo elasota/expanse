@@ -4,8 +4,10 @@ namespace expanse
 {
 	namespace cc
 	{
-		struct CPreprocessorFile
+		enum class CAggregateType
 		{
+			kStruct,
+			kUnion,
 		};
 	}
 }

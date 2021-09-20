@@ -202,6 +202,9 @@ namespace expanse
 	template<class T>
 	ResultRV<ArrayPtr<T>> NewArray(IAllocator *alloc, size_t numElements)
 	{
+		if (numElements == 0)
+			return ArrayPtr<T>(nullptr);
+
 		ArrayPtr<T> result(ObjectAllocator::NewArray<T>(alloc, numElements));
 		if (result == nullptr)
 			return ErrorCode::kOutOfMemory;

@@ -1,5 +1,34 @@
 #pragma once
 
+#include "PreprocessorUtils.h"
+
+#define CHECK_RV_ID(type, name, expr, varName)	\
+	::expanse::ResultRV<type> varName(expr);\
+	{\
+		const ::expanse::ErrorCode errorCode = varName.GetErrorCode();\
+		varName.Handle();\
+		if (errorCode != ::expanse::ErrorCode::kOK)\
+			return errorCode;\
+	}\
+	type name(varName.TakeValue())
+
+#define CHECK_RV_ASSIGN_ID(targetExpr, expr, varName)	\
+	do\
+	{\
+		auto varName(expr);\
+		{\
+			const ::expanse::ErrorCode errorCode = varName.GetErrorCode();\
+			varName.Handle();\
+			if (errorCode != ::expanse::ErrorCode::kOK)\
+				return errorCode;\
+		}\
+		(targetExpr) = std::move(varName.TakeValue());\
+	} while (false)
+
+#define CHECK_RV(type, name, expr) CHECK_RV_ID(type, name, expr, EXP_CONCAT(expanse_check_rrv_, __COUNTER__))
+
+#define CHECK_RV_ASSIGN(targetExpr, expr) CHECK_RV_ASSIGN_ID(targetExpr, expr, EXP_CONCAT(expanse_check_rrv_, __COUNTER__))
+
 #include "BuildConfig.h"
 #include "ErrorCode.h"
 
@@ -80,6 +109,7 @@ namespace expanse
 #endif
 	{
 		EXP_ASSERT(errorCode != ErrorCode::kOK);
+		EXP_ASSERT_RESULT(errorCode);
 	}
 
 	template<class T>
@@ -204,17 +234,3 @@ namespace expanse
 	{
 	}
 }
-
-#include "PreprocessorUtils.h"
-
-#define CHECK_RV_ID(type, name, expr, varName)	\
-	::expanse::ResultRV<type> varName(expr);\
-	{\
-		const ::expanse::ErrorCode errorCode = varName.GetErrorCode();\
-		varName.Handle();\
-		if (errorCode != ::expanse::ErrorCode::kOK)\
-			return errorCode;\
-	}\
-	type name(varName.TakeValue())
-
-#define CHECK_RV(type, name, expr) CHECK_RV_ID(type, name, expr, EXP_CONCAT(expanse_check_rrv_, __COUNTER__))

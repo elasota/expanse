@@ -2,7 +2,8 @@
 
 #include "AsyncFileSystem.h"
 #include "CorePtr.h"
-#include "String.h"
+#include "ErrorCode.h"
+#include "XString.h"
 
 #include <atomic>
 
@@ -21,7 +22,7 @@ namespace expanse
 		AsyncFileSystem_Win32(SynchronousFileSystem *syncFileSystem);
 		~AsyncFileSystem_Win32();
 
-		Result Initialize() override;
+		Result Initialize();
 		ResultRV<CorePtr<AsyncFileRequest>> Retrieve(const UTF8StringView_t &device, const UTF8StringView_t &path) override;
 
 		enum WorkItemState
@@ -48,7 +49,9 @@ namespace expanse
 			WorkItemIdentifier m_id;
 			WorkItem *m_prev;
 			WorkItem *m_next;
+
 			std::atomic<int> m_finished;
+			ErrorCode m_errorCode;
 		};
 
 		void CancelItem(WorkItem *workItem);
@@ -57,7 +60,7 @@ namespace expanse
 		static int StaticThreadFunc(void *self);
 		int ThreadFunc();
 
-		void TryLoadWorkItem(const WorkItemIdentifier &identifier, WorkItemState &outState, ArrayPtr<uint8_t> &outContents);
+		void TryLoadWorkItem(const WorkItemIdentifier &identifier, WorkItemState &outState, ErrorCode &outErrorCode, ArrayPtr<uint8_t> &outContents);
 		Result TryLoadWorkItemChecked(const WorkItemIdentifier &identifier, ArrayPtr<uint8_t> &outContents);
 
 		CorePtr<Thread> m_ioThread;

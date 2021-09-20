@@ -40,6 +40,7 @@ namespace expanse
 
 		operator T *() const;
 		T *operator->() const;
+		T *Get() const;
 
 		template<class TOther>
 		CorePtr<T> &operator=(CorePtr<TOther> &&other);
@@ -135,6 +136,13 @@ namespace expanse
 	}
 
 	template<class T>
+	T *CorePtr<T>::Get() const
+	{
+		return static_cast<T*>(m_object);
+	}
+
+
+	template<class T>
 	template<class TOther>
 	CorePtr<T> &CorePtr<T>::operator=(CorePtr<TOther> &&other)
 	{
@@ -161,36 +169,36 @@ namespace expanse
 	template<class T>
 	bool CorePtr<T>::operator==(const T *other) const
 	{
-		return m_object == other;
+		return static_cast<const T*>(m_object) == other;
 	}
 
 	template<class T>
 	bool CorePtr<T>::operator!=(const T *other) const
 	{
-		return m_object != other;
+		return static_cast<const T*>(m_object) != other;
 	}
 
 	template<class T>
 	bool CorePtr<T>::operator<(const T *other) const
 	{
-		return m_object < other;
+		return static_cast<const T*>(m_object) < other;
 	}
 
 	template<class T>
 	bool CorePtr<T>::operator<=(const T *other) const
 	{
-		return m_object <= other;
+		return static_cast<const T*>(m_object) <= other;
 	}
 
 	template<class T>
 	bool CorePtr<T>::operator>(const T *other) const
 	{
-		return m_object > other;
+		return static_cast<const T*>(m_object) > other;
 	}
 
 	template<class T>
 	bool CorePtr<T>::operator>=(const T *other) const
 	{
-		return m_object >= other;
+		return static_cast<const T*>(m_object) >= other;
 	}
 }

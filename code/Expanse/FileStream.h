@@ -29,8 +29,18 @@ namespace expanse
 		template<class T>
 		ResultRV<size_t> ReadPartial(const ArrayView<T> &arrayView);
 
+		template<class T>
+		Result  ReadAll(const ArrayView<T> &arrayView);
+
+		template<class T>
+		ResultRV<size_t> WritePartial(const ArrayView<T> &arrayView);
+
+		template<class T>
+		Result WriteAll(const ArrayView<T> &arrayView);
+
 	protected:
 		virtual ResultRV<size_t> Read(void *buffer, size_t size) = 0;
+		virtual ResultRV<size_t> Write(const void *buffer, size_t size) = 0;
 	};
 }
 
@@ -47,5 +57,43 @@ namespace expanse
 
 		CHECK_RV(size_t, numBytesRead, this->Read(&arrayView[0], sizeof(T) * arrayView.Size()));
 		return numBytesRead / sizeof(T);
+	}
+
+	template<class T>
+	Result FileStream::ReadAll(const ArrayView<T> &arrayView)
+	{
+		if (arrayView.Size() == 0)
+			return ErrorCode::kOK;
+
+		const size_t numBytes = sizeof(T) * arrayView.Size();
+		CHECK_RV(size_t, numBytesRead, this->Read(&arrayView[0], numBytes));
+		if (numBytesRead != numBytes)
+			return ErrorCode::kIOError;
+
+		return ErrorCode::kOK;
+	}
+
+	template<class T>
+	ResultRV<size_t> FileStream::WritePartial(const ArrayView<T> &arrayView)
+	{
+		if (arrayView.Size() == 0)
+			return 0;
+
+		CHECK_RV(size_t, numBytesWritten, this->Write(&arrayView[0], sizeof(T) * arrayView.Size()));
+		return numBytesWritten / sizeof(T);
+	}
+
+	template<class T>
+	Result FileStream::WriteAll(const ArrayView<T> &arrayView)
+	{
+		if (arrayView.Size() == 0)
+			return ErrorCode::kOK;
+
+		const size_t numBytes = sizeof(T) * arrayView.Size();
+		CHECK_RV(size_t, numBytesWritten, this->Write(&arrayView[0], numBytes));
+		if (numBytesWritten != numBytes)
+			return ErrorCode::kIOError;
+
+		return ErrorCode::kOK;
 	}
 }
